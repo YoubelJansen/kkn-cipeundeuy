@@ -1,16 +1,17 @@
 // app/page.tsx
 'use client';
 
-import { motion } from 'framer-motion';
+// 1. Tambahkan 'Variants' pada baris import
+import { motion, Variants } from 'framer-motion';
 import Link from 'next/link';
 
-// Variasi animasi untuk efek transisi halus saat scroll
-const fadeInUp = {
+// 2. Beri label tipe ': Variants' agar TypeScript tidak protes
+const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 50 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut' } }
 };
 
-const staggerContainer = {
+const staggerContainer: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -30,7 +31,6 @@ export default function Home() {
           transition={{ duration: 1 }}
           className="w-48 h-48 mb-6 relative bg-white rounded-full shadow-lg flex items-center justify-center p-4"
         >
-          {/* Nanti ganti teks ini dengan tag <img /> untuk logo KKN kamu */}
           <span className="text-xs text-gray-400 font-bold">Logo KKN</span>
         </motion.div>
         
@@ -49,7 +49,8 @@ export default function Home() {
           transition={{ delay: 1, duration: 1 }}
           className="mt-4 text-lg md:text-xl text-[#5a6e5d] max-w-xl italic"
         >
-          "Dedikasi Nyata untuk Desa Berkelanjutan"
+          {/* 3. Tanda kutip diganti menjadi &quot; */}
+          &quot;Dedikasi Nyata untuk Desa Berkelanjutan&quot;
         </motion.p>
         
         <motion.div 
