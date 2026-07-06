@@ -52,19 +52,12 @@ export default function BeritaPage() {
           </span>
         </Link>
 
-        <div className="mt-8 mb-12 border-b border-gray-200 pb-6 flex justify-between items-end">
-          <div>
+  <div className="mt-8 mb-12 border-b border-gray-200 pb-6">
             <h1 className="text-3xl md:text-5xl font-bold text-[#1a3a2a] mb-2">
               Kabar KKN Cipeundeuy
             </h1>
             <p className="text-gray-500">Ikuti terus pembaruan kegiatan dan program kerja dari kami.</p>
           </div>
-          <Link href="/admin">
-            <span className="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-full cursor-pointer transition-colors">
-              + Tulis Berita
-            </span>
-          </Link>
-        </div>
 
         {/* Kondisi saat Loading */}
         {loading ? (
