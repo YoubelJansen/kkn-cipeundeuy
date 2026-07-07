@@ -3,10 +3,20 @@
 
 import { motion, Variants } from 'framer-motion';
 import Link from 'next/link';
-import { title } from 'process';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase'; // Pastikan path ini benar mengarah ke file supabase.ts kamu
 
-// Variasi animasi untuk efek transisi halus saat scroll
+// Tipe data Berita untuk TypeScript
+interface Berita {
+  id: number;
+  title: string;
+  content: string;
+  image_url: string;
+  author: string;
+  created_at: string;
+}
+
+// Variasi animasi
 const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 50 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut' } }
@@ -14,18 +24,15 @@ const fadeInUp: Variants = {
 
 const staggerContainer: Variants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.2 }
-  }
+  visible: { opacity: 1, transition: { staggerChildren: 0.2 } }
 };
 
 export default function Home() {
   // --- LOGIKA CAROUSEL DIVISI ---
   const [divisiIndex, setDivisiIndex] = useState(0);
 
-  const divisiData = [
-    { id: 0, title: 'Ketua', img: '/ketua.jpg', desc: 'ketua' },
+const divisiData = [
+    { id: 0, title: 'Ketua', img: '/test.png', desc: 'ketua' },
     { id: 1, title: 'Wakil', img: '/wakil.jpg', desc: 'Wakil' },
     { id: 2, title: 'Sekertaris', img: '/sekertaris.jpg', desc: 'laporan' },
     { id: 3, title: 'Bendahara', img: '/bendahara.jpg', desc: 'Duit' },
@@ -47,6 +54,31 @@ export default function Home() {
     { name: 'PGSD', img: '/prodi-pgsd.jpg' },
     { name: 'Hukum', img: '/prodi-hukum.jpg' },
   ];
+  // ------------------------------
+
+  // --- LOGIKA AMBIL BERITA TERBARU ---
+  const [beritaTerbaru, setBeritaTerbaru] = useState<Berita[]>([]);
+  const [loadingBerita, setLoadingBerita] = useState(true);
+
+  useEffect(() => {
+    async function fetchBerita() {
+      try {
+        const { data, error } = await supabase
+          .from('berita')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(5); // Ambil maksimal 5 berita terbaru saja
+
+        if (error) throw error;
+        setBeritaTerbaru(data || []);
+      } catch (error: any) {
+        console.error('Gagal mengambil berita:', error.message);
+      } finally {
+        setLoadingBerita(false);
+      }
+    }
+    fetchBerita();
+  }, []);
   // ------------------------------
 
   return (
@@ -138,7 +170,47 @@ export default function Home() {
         </motion.div>
       </section>
 
-      {/* 3. DIVISI KKN (3D Coverflow Carousel) */}
+      {/* 3. PENGENALAN BANK SAMPAH (Program Unggulan) */}
+      <section className="min-h-screen flex items-center justify-center p-8 md:p-24 bg-white">
+        <motion.div 
+          variants={fadeInUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          // Di balik posisinya (teks di kiri, gambar di kanan) agar layout lebih dinamis
+          className="max-w-6xl w-full grid md:grid-cols-2 gap-8 md:gap-16 items-center flex-col-reverse md:flex-row"
+        >
+          <div className="flex flex-col justify-center px-4 md:px-0 md:order-1 order-2 mt-8 md:mt-0">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-[#1a3a2a] mb-6">
+              Program Bank Sampah
+            </h2>
+            <div className="space-y-4 text-lg text-gray-700 leading-relaxed text-justify">
+              <p>
+                Sebagai wujud dedikasi nyata untuk desa berkelanjutan, kami menghadirkan inisiatif <strong className="text-[#5a6e5d]">Bank Sampah Cipeundeuy</strong>. Program ini bertujuan untuk mengedukasi masyarakat tentang pentingnya memilah sampah dari rumah.
+              </p>
+              <p>
+                Sampah yang sebelumnya menjadi masalah lingkungan, kini dapat disulap menjadi nilai ekonomis yang bermanfaat bagi warga. Melalui sistem ini, kami berharap tercipta lingkungan Cipeundeuy yang lebih bersih, asri, dan mandiri secara ekologi maupun ekonomi.
+              </p>
+            </div>
+          </div>
+
+          <div className="relative w-full h-[350px] md:h-[500px] md:order-2 order-1">
+            <img 
+              // Siapkan foto tentang bank sampah/kebersihan di folder public
+              src="/banksampah.jpg" 
+              alt="Program Bank Sampah" 
+              className="w-full h-full object-cover rounded-3xl md:rounded-none md:rounded-r-3xl bg-gray-200"
+              style={{
+                // Efek memudar dibalik (jelas di kanan, pudar di kiri)
+                WebkitMaskImage: 'linear-gradient(to left, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%)',
+                maskImage: 'linear-gradient(to left, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%)'
+              }}
+            />
+          </div>
+        </motion.div>
+      </section>
+
+      {/* 4. DIVISI KKN (3D Coverflow Carousel) */}
       <section className="min-h-screen bg-[#e3ede4] py-20 px-4 flex flex-col justify-center items-center overflow-hidden">
         <motion.h2 
           variants={fadeInUp}
@@ -213,8 +285,8 @@ export default function Home() {
         </motion.div>
       </section>
 
-      {/* 4. PORTAL PRODI & EDUKASI SAMPAH (Desain Card Portrait) */}
-      <section className="min-h-screen py-20 px-4 md:px-8 flex flex-col justify-center items-center bg-white">
+      {/* 5. PORTAL PRODI & EDUKASI SAMPAH */}
+      <section className="min-h-screen py-20 px-4 md:px-8 flex flex-col justify-center items-center bg-[#fcf8f2]">
         <motion.h2 
           variants={fadeInUp}
           initial="hidden"
@@ -227,25 +299,18 @@ export default function Home() {
           Pilih prodi untuk melihat kontribusi keilmuan kami untuk Desa Cipeundeuy.
         </p>
 
-        {/* Kontainer Grid Kartu Prodi */}
         <div className="flex flex-wrap justify-center gap-4 md:gap-6 max-w-7xl w-full">
           {prodiData.map((prodi, index) => (
             <motion.div
               key={index}
-              // Ini efek pop-up saat disentuh mouse
               whileHover={{ scale: 1.05, y: -10, zIndex: 10 }}
               className="relative w-[45%] sm:w-48 md:w-56 h-72 md:h-96 rounded-3xl overflow-hidden shadow-lg cursor-pointer group bg-gray-200"
             >
-              {/* Layer 1: Background Image (sementara warna abu-abu sebelum foto asli dimasukkan) */}
               <div 
                 className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
                 style={{ backgroundImage: `url('${prodi.img}')` }}
               />
-              
-              {/* Layer 2: Overlay redup 40% (bg-black/40). Semakin redup jika di-hover (bg-black/20) */}
               <div className="absolute inset-0 bg-black/40 transition-colors duration-300 group-hover:bg-black/20" />
-
-              {/* Layer 3: Teks Prodi di bagian bawah */}
               <div className="absolute inset-0 flex items-end justify-center pb-8 md:pb-12">
                 <span className="text-white font-extrabold text-xl md:text-2xl tracking-wide drop-shadow-md">
                   {prodi.name}
@@ -254,17 +319,81 @@ export default function Home() {
             </motion.div>
           ))}
         </div>
+      </section>
 
-        <div className="mt-20">
-          <Link href="/berita">
-            <motion.span 
-              whileHover={{ x: 5 }}
-              className="px-8 py-4 bg-[#1a3a2a] text-white rounded-full font-bold shadow-lg hover:bg-[#0d211c] cursor-pointer flex items-center gap-3 transition-colors"
-            >
-              Lihat Berita Kegiatan KKN &rarr;
-            </motion.span>
-          </Link>
-        </div>
+      {/* 6. BERITA TERBARU (Carousel Horizontal Geser) */}
+      <section className="py-24 px-4 bg-white flex flex-col items-center">
+        <motion.div 
+          variants={fadeInUp}
+          initial="hidden"
+          whileInView="visible"
+          className="w-full max-w-7xl"
+        >
+          <div className="flex flex-col md:flex-row justify-between items-end mb-10 px-4 md:px-8">
+            <div>
+              <h2 className="text-3xl md:text-5xl font-extrabold text-[#1a3a2a] mb-2">Berita Terbaru</h2>
+              <p className="text-gray-500 text-lg">Ikuti terus *update* kegiatan KKN kami.</p>
+            </div>
+            
+            {/* Tombol Lihat Semua (Desktop) */}
+            <Link href="/berita" className="hidden md:inline-block">
+              <span className="text-[#5a6e5d] font-bold hover:underline cursor-pointer flex items-center gap-2">
+                Lihat Semua Berita &rarr;
+              </span>
+            </Link>
+          </div>
+
+          {/* Wrapper Slider Berita yang bisa digeser (Scroll Horizontal) */}
+          {loadingBerita ? (
+            <div className="flex justify-center py-10">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#1a3a2a]"></div>
+            </div>
+          ) : beritaTerbaru.length === 0 ? (
+             <div className="text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+               <p className="text-gray-500">Belum ada berita yang diterbitkan.</p>
+             </div>
+          ) : (
+            <div className="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 w-full px-4 md:px-8 hide-scroll-bar">
+              {beritaTerbaru.map((berita) => (
+                <div 
+                  key={berita.id} 
+                  className="snap-center shrink-0 w-[280px] md:w-[350px] bg-[#fcf8f2] rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow border border-gray-100 flex flex-col"
+                >
+                  <div className="h-48 bg-gray-200 relative overflow-hidden">
+                    {berita.image_url ? (
+                      <img src={berita.image_url} alt={berita.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">Tidak ada gambar</div>
+                    )}
+                  </div>
+                  <div className="p-6 flex-1 flex flex-col justify-between">
+                    <div>
+                      <span className="text-xs font-bold text-[#5a6e5d] bg-[#e3ede4] px-3 py-1 rounded-full">
+                        {berita.author || 'Tim KKN'}
+                      </span>
+                      <h3 className="text-xl font-bold text-[#1a3a2a] mt-4 mb-2 line-clamp-2 leading-tight">
+                        {berita.title}
+                      </h3>
+                      <p className="text-gray-600 text-sm line-clamp-2">
+                        {berita.content}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Tombol Lihat Semua (Mobile - tampil di bawah) */}
+          <div className="mt-4 flex justify-center md:hidden">
+             <Link href="/berita">
+              <span className="px-6 py-3 bg-[#1a3a2a] text-white rounded-full font-bold shadow-lg hover:bg-[#0d211c] cursor-pointer text-sm">
+                Lihat Semua Berita
+              </span>
+            </Link>
+          </div>
+
+        </motion.div>
       </section>
 
     </main>
